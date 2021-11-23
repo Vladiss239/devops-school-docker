@@ -1,0 +1,42 @@
+version: "3.9"   
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=django
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=django
+    networks:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfile_be
+    command: bash -c "python3 parse_docx.py && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      - db
+
+  frontend:
+    build: 
+      context: .
+      dockerfile: dockerfile_fe
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend
+    depends_on:
+      - db
+
+networks:
+  frontend:
+  backend:
+
